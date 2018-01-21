@@ -41,6 +41,7 @@ hs_err_pid*
 .idea/**/uiDesigner.xml
 
 # Gradle:
+.idea/
 .idea/**/gradle.xml
 .idea/**/libraries
 
@@ -76,7 +77,6 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-.idea
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
