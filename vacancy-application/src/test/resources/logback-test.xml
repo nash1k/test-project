@@ -1,0 +1,16 @@
+<configuration>
+    <logger name="com.example.beeline" level="DEBUG"/>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.apache.kafka" level="ERROR"/>
+    <logger name="org.apache.zookeeper" level="ERROR"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="${ROOT_LOG_LEVEL:-WARN}">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
