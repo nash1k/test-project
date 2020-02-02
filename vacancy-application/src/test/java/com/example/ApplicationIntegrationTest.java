@@ -6,6 +6,7 @@ import com.example.entity.Candidate;
 import com.example.repository.CandidateRepository;
 import com.example.service.ConsumerService;
 import com.example.service.InformerService;
+import com.example.service.RepositoryService;
 import com.google.gson.Gson;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -20,17 +21,28 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import java.util.ArrayList;
@@ -47,7 +59,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-@DataJpaTest
+@AutoConfigureDataJpa
+@AutoConfigureTestDatabase
+@AutoConfigureTestEntityManager
 @ContextConfiguration(classes = { KafkaConsumerConfig.class })
 @TestPropertySource({ "classpath:application.properties" })
 @EntityScan("com.example")
@@ -78,8 +92,8 @@ public class ApplicationIntegrationTest {
      * Create instance of embedded kafka for tests
      */
     @ClassRule
-    public static KafkaEmbedded embeddedKafka =
-            new KafkaEmbedded(1, true, 2, TOPIC);
+    public static EmbeddedKafkaRule embeddedKafkaRule =
+            new EmbeddedKafkaRule(1, true, 2, TOPIC);
 
     /**
      * Initialization of embedded kafka. Get hosts of bootstrap server.
@@ -89,12 +103,12 @@ public class ApplicationIntegrationTest {
     public static void setUpBeforeClass() {
         LOG.debug("Configuring Kafka Producer");
         final Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafkaRule.getEmbeddedKafka().getBrokersAsString());
         props.put(ProducerConfig.RETRIES_CONFIG, 0);
         kafkaProducer = new KafkaProducer<>(props, stringSerializer, stringSerializer);
 
         //Need it for KafkaConsumerConfig
-        System.setProperty("kafka.consumer.bootstrap.servers", embeddedKafka.getBrokersAsString());
+        System.setProperty("kafka.consumer.bootstrap.servers", embeddedKafkaRule.getEmbeddedKafka().getBrokersAsString());
     }
 
     @Test
@@ -128,7 +142,7 @@ public class ApplicationIntegrationTest {
         //Should give some time for the kafka streams and logic process
         Thread.sleep(2000);
         //Then
-        final Candidate candidate = candidateRepository.findOne(1L);
+        final Candidate candidate = candidateRepository.findById(1L).get();
         //inform was called for all results
         verify(informerServiceSpy, times(1)).inform(any(Candidate.class), anyString());
         verify(informerServiceSpy, times(1)).inform(candidate, "10");
@@ -146,7 +160,7 @@ public class ApplicationIntegrationTest {
         //Should give some time for the kafka streams and logic process
         Thread.sleep(2000);
         //Then
-        final Candidate candidate = candidateRepository.findOne(2L);
+        final Candidate candidate = candidateRepository.findById(2L).get();
         //inform was called for all results
         verify(informerServiceSpy, times(1)).inform(any(Candidate.class), anyString());
         verify(informerServiceSpy, times(1)).inform(candidate, "OK");

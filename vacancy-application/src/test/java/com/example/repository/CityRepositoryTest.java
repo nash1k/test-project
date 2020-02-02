@@ -29,7 +29,7 @@ public class CityRepositoryTest {
     @Test
     public void findByPrimaryKeyTest() {
         //When
-        City foundCity = cityRepository.findOne(city.getId());
+        City foundCity = cityRepository.findById(city.getId()).get();
         //Then
         assertNotNull(foundCity);
         assertEquals("City result is incorrect", city, foundCity);

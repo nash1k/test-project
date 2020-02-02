@@ -18,6 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -41,7 +42,7 @@ public class RepositoryServiceTest {
         //Given
         final City city = EntityUtil.createCity(1, "Milan");
         final Candidate candidate = EntityUtil.createCandidate(1L, "Sergey", "Petrov", city, true);
-        when(candidateRepository.findOne(anyLong())).thenReturn(candidate);
+        when(candidateRepository.findById(anyLong())).thenReturn(Optional.of(candidate));
         //When
         KeyValue<Candidate, Set<String>> result = repositoryService.transform("111", new InputEvent(1L, 123L));
         //Then
@@ -59,8 +60,8 @@ public class RepositoryServiceTest {
         cityVacancies.add(EntityUtil.createVacancy(140L, "java developer", city, "BBB", VacancyState.ACTIVE));
         cityVacancies.add(EntityUtil.createVacancy(150L, "java developer", city, "BBB", VacancyState.ACTIVE));
         cityVacancies.add(EntityUtil.createVacancy(160L, "java developer", city, "CCC", VacancyState.ACTIVE));
-        when(candidateRepository.findOne(anyLong())).thenReturn(candidate);
-        when(vacancyRepository.findOne(anyLong())).thenReturn(originalVacancy);
+        when(candidateRepository.findById(anyLong())).thenReturn(Optional.of(candidate));
+        when(vacancyRepository.findById(anyLong())).thenReturn(Optional.of(originalVacancy));
         when(vacancyRepository.findAllByCityIdAndStateAndName(2, VacancyState.ACTIVE, "java developer")).thenReturn(cityVacancies);
 
         //When

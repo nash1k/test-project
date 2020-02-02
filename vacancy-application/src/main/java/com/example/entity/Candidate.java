@@ -3,6 +3,7 @@ package com.example.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 /**
  * {@link Entity} class for manipulations by candidates' data
@@ -36,4 +37,8 @@ public class Candidate {
     @ManyToOne
     @JoinColumn(name = "city_id")
     private City city;
+
+    //original city_id without joined entity - use it if you don't want to get full info - just id
+    @Column(name = "city_id", updatable = false, insertable = false)
+    private Integer cityId;
 }

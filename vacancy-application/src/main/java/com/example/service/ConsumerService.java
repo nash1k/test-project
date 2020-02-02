@@ -3,30 +3,26 @@ package com.example.service;
 import com.example.config.KafkaConsumerConfig;
 import com.example.domain.InputEvent;
 import com.example.entity.Candidate;
-import com.example.entity.Vacancy;
 import com.google.gson.Gson;
 import lombok.Getter;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.time.Duration;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -40,19 +36,22 @@ public class ConsumerService {
 
     private final Serde<String> stringSerdes = Serdes.String();
 
-    @Autowired
     private KafkaConsumerConfig kafkaConsumerConfig;
-
-    @Autowired
     private Transformer<String, InputEvent, KeyValue<Candidate, Set<String>>> repositoryService;
-
-    @Autowired
     private Informer informerService;
 
     private final Properties consumerStreamsConfiguration = new Properties();
     private KafkaStreams streams;
     @Getter
     private volatile AtomicInteger invalidCount = new AtomicInteger();
+
+    public ConsumerService(KafkaConsumerConfig kafkaConsumerConfig,
+                           Transformer<String, InputEvent, KeyValue<Candidate, Set<String>>> repositoryService,
+                           Informer informerService) {
+        this.kafkaConsumerConfig = kafkaConsumerConfig;
+        this.repositoryService = repositoryService;
+        this.informerService = informerService;
+    }
 
     /**
      * Setup the Kafka Consumer
@@ -76,12 +75,12 @@ public class ConsumerService {
     private void consumeMessages() {
         LOG.info("Create streams for Reading messages from Consumer");
 
-        final KStreamBuilder builder = new KStreamBuilder();
-        final List<String> consumerTopics = kafkaConsumerConfig.getConsumerTopicsAsList();
+        final var builder = new StreamsBuilder();
+        final var consumerTopics = kafkaConsumerConfig.getConsumerTopicsAsList();
 
         for (int topicIdx = 0; topicIdx < consumerTopics.size(); topicIdx++) {
-            final String topic = consumerTopics.get(topicIdx);
-            final KStream<String, String> messages = builder.stream(topic);
+            var topic = consumerTopics.get(topicIdx);
+            KStream<String, String> messages = builder.stream(topic);
             messages
                     .flatMapValues(message -> {
                         try {
@@ -96,7 +95,7 @@ public class ConsumerService {
                     .foreach((candidate, companyList) -> {
                         LOG.debug("Informing companies about great candidate: {}", candidate);
                         companyList.forEach(companyId -> {
-                            final boolean isSuccess = informerService.inform(candidate, companyId);
+                            var isSuccess = informerService.inform(candidate, companyId);
                             if (isSuccess) {
                                 LOG.debug("Company {} was successfully informed about candidate {}", companyId, candidate.getId());
                             } else {
@@ -105,7 +104,7 @@ public class ConsumerService {
                         });
                     });
         }
-        streams = new KafkaStreams(builder, consumerStreamsConfiguration);
+        streams = new KafkaStreams(builder.build(), consumerStreamsConfiguration);
         streams.start();
     }
 
@@ -116,6 +115,6 @@ public class ConsumerService {
     public void shutdown() {
         LOG.debug("Closing SerDe");
         stringSerdes.close();
-        streams.close(1, TimeUnit.SECONDS);
+        streams.close(Duration.ofSeconds(1));
     }
 }

@@ -32,7 +32,7 @@ public class CandidateRepositoryTest {
     @Test
     public void findByPrimaryKeyTest() {
         //When
-        Candidate foundCandidate = candidateRepository.findOne(candidate.getId());
+        Candidate foundCandidate = candidateRepository.findById(candidate.getId()).get();
         //Then
         assertNotNull(foundCandidate);
         assertEquals("Candidate result is incorrect", candidate, foundCandidate);

@@ -36,7 +36,7 @@ public class VacancyRepositoryTest {
     @Test
     public void findByPrimaryKeyTest() {
         //When
-        Vacancy foundVacancy = vacancyRepository.findOne(vacancy.getId());
+        Vacancy foundVacancy = vacancyRepository.findById(vacancy.getId()).get();
         //Then
         assertNotNull(foundVacancy);
         assertEquals("Vacancy result is incorrect", vacancy, foundVacancy);

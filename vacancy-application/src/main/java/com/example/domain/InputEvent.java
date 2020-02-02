@@ -14,7 +14,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InputEvent implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -2297477803276138370L;
 
     private Long candidateId;
     private Long vacancyId;

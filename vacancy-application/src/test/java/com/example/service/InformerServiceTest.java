@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
@@ -22,7 +21,6 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
  * Test for {@link InformerService} class
  */
 @TestPropertySource("classpath:application.properties")
-@SpringBootTest(classes = { InformerService.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 @RestClientTest(InformerService.class)
 public class InformerServiceTest {
