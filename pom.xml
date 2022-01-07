@@ -38,7 +38,7 @@
         <org.apache.kafka.version>2.3.1</org.apache.kafka.version>
         <apache.commons.lang3.version>3.5</apache.commons.lang3.version>
         <apache.commons.collections.version>4.1</apache.commons.collections.version>
-        <h2database.version>1.4.194</h2database.version>
+        <h2database.version>2.0.206</h2database.version>
         <spring.kafka.version>2.4.1.RELEASE</spring.kafka.version>
         <spring.kafka.test.version>2.4.1.RELEASE</spring.kafka.test.version>
         <springfox-swagger.version>2.6.1</springfox-swagger.version>
